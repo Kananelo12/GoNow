@@ -157,12 +157,12 @@ export default function Page() {
       });
 
       setUserLocation({
-        // latitude: location.coords.latitude,
-        // longitude: location.coords.longitude,
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
         // latitude: -29.314697,
         // longitude: 27.501937,
-        latitude: -29.3369231,
-        longitude: 27.4830146,
+        // latitude: -29.3369231,
+        // longitude: 27.4830146,
         address: `${address[0].name}, ${address[0].region}`,
       });
     };
