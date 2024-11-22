@@ -5,8 +5,11 @@ import { useEffect } from "react";
 import "react-native-reanimated";
 
 import { ClerkProvider, ClerkLoaded } from "@clerk/clerk-expo";
-import { Slot } from "expo-router";
 import { tokenCache } from "@/lib/auth";
+
+// TODO: Remove After Transitioning to production-ready API keys
+import { LogBox } from "react-native";
+LogBox.ignoreLogs(["Clerk:"]);
 
 const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY!;
 

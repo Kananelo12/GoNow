@@ -32,7 +32,7 @@ const GoogleTextInput = ({
         textInput: {
           backgroundColor: textInputBackgroundColor || "white",
           fontSize: 16,
-          fontWeight: 600,
+          fontWeight: 600, //TODO: may need to wrap as string
           marginTop: 5,
           width: "100%",
           borderRadius: 200,

@@ -35,66 +35,71 @@ const Payment = ({
       intentConfiguration: {
         mode: {
           amount: parseInt(amount) * 100,
-          currencyCode: "ZAR",
+          currencyCode: "zar",
         },
         confirmHandler: async (paymentMethod, _, intentCreationCallback) => {
-          // Make a request to your own server.
-          const { paymentIntent, customer } = await fetchAPI(
-            "/(api)/(stripe)/create",
-            {
-              method: "POST",
-              headers: {
-                "content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                name: fullName || email.split("@")[0],
-                email: email,
-                amount: amount,
-                paymentMethodId: paymentMethod.id,
-              }),
-            }
-          );
-
-          if (paymentIntent.client_secret) {
-            const { result } = await fetchAPI("/(api)/(stripe)/pay", {
-              method: "POST",
-              headers: {
-                "content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                payment_method_id: paymentMethod.id,
-                payment_intent_id: paymentIntent.id,
-                customer_id: customer,
-              }),
-            });
-
-            // create a ride if it exists
-            if (result.client_secret) {
-              // call to a new api route
-              await fetchAPI("/(api)/ride/create", {
+          try {
+            // Make a request to your own server.
+            const { paymentIntent, customer } = await fetchAPI(
+              "/(api)/(stripe)/create",
+              {
                 method: "POST",
                 headers: {
                   "content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                  origin_address: userAddress,
-                  destination_address: destinationAddress,
-                  origin_latitude: userLatitude,
-                  origin_longitude: userLongitude,
-                  destination_latitude: destinationLatitude,
-                  destination_longitude: destinationLongitude,
-                  ride_time: rideTime.toFixed(0),
-                  fare_price: parseInt(amount) * 100,
-                  payment_status: "paid",
-                  driver_id: driverId,
-                  user_id: userId,
+                  name: fullName || email.split("@")[0],
+                  email: email,
+                  amount: amount,
+                  paymentMethodId: paymentMethod.id,
+                }),
+              }
+            );
+
+            if (paymentIntent.client_secret) {
+              const { result } = await fetchAPI("/(api)/(stripe)/pay", {
+                method: "POST",
+                headers: {
+                  "content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  payment_method_id: paymentMethod.id,
+                  payment_intent_id: paymentIntent.id,
+                  customer_id: customer,
                 }),
               });
 
-              intentCreationCallback({
-                clientSecret: result.client_secret,
-              });
+              // create a ride if it exists
+              if (result.client_secret) {
+                // call to a new api route
+                await fetchAPI("/(api)/ride/create", {
+                  method: "POST",
+                  headers: {
+                    "content-Type": "application/json",
+                  },
+                  body: JSON.stringify({
+                    origin_address: userAddress,
+                    destination_address: destinationAddress,
+                    origin_latitude: userLatitude,
+                    origin_longitude: userLongitude,
+                    destination_latitude: destinationLatitude,
+                    destination_longitude: destinationLongitude,
+                    ride_time: rideTime.toFixed(0),
+                    fare_price: parseInt(amount) * 100,
+                    payment_status: "paid",
+                    driver_id: driverId,
+                    user_id: userId,
+                  }),
+                });
+
+                intentCreationCallback({
+                  clientSecret: result.client_secret,
+                });
+              }
             }
+          } catch (error) {
+            console.error("Payment Handler Error:", error);
+            Alert.alert(`Error code: ${error}`);
           }
         },
       },
@@ -102,6 +107,11 @@ const Payment = ({
     });
     if (error) {
       // handle error
+      console.error("Payment Sheet Initialization Error:", error.message);
+      Alert.alert(
+        "Payment Error",
+        "There was an issue initializing the payment sheet. Please try again."
+      );
     }
   };
 
@@ -132,12 +142,14 @@ const Payment = ({
         onBackdropPress={() => setSuccess(false)}
       >
         <View className="flex flex-col items-center justify-center bg-white p-7 rounded-2xl">
-          <Image
-            source={images.check}
-            className="w-28 h-28 mt-5"
-          />
-          <Text className="text-2xl text-center font-JakartaBold mt-5">Ride Booked</Text>
-          <Text className="text-md text-center text-general-200 font-JakartaMedium mt-3">Thank you for your booking. Your reservation has been placed. Please proceed with your trip!</Text>
+          <Image source={images.check} className="w-28 h-28 mt-5" />
+          <Text className="text-2xl text-center font-JakartaBold mt-5">
+            Ride Booked
+          </Text>
+          <Text className="text-md text-center text-general-200 font-JakartaMedium mt-3">
+            Thank you for your booking. Your reservation has been placed. Please
+            proceed with your trip!
+          </Text>
 
           <CustomButton
             title="Back Home"
