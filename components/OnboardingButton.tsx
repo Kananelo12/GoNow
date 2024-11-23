@@ -31,7 +31,7 @@ const getTextVariantStyle = (variant: ButtonProps["textVariant"]) => {
   }
 };
 
-const CustomButton = ({
+const OnboardingButton = ({
   onPress,
   title,
   bgVariant = "primary",
@@ -54,4 +54,4 @@ const CustomButton = ({
   </TouchableOpacity>
 );
 
-export default CustomButton;
+export default OnboardingButton;
