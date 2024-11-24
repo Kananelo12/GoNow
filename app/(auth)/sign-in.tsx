@@ -5,7 +5,7 @@ import OAuth from "@/components/OAuth";
 import { icons, images } from "@/constants";
 import { Link, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
-import { Image, ScrollView, Text, View } from "react-native";
+import { Alert, Image, ScrollView, Text, View } from "react-native";
 
 const SignIn = () => {
   const { signIn, setActive, isLoaded } = useSignIn()
@@ -17,28 +17,47 @@ const SignIn = () => {
   });
 
   const onSignInPress = useCallback(async () => {
-    if (!isLoaded) {
-      return
+    // Basic form validation
+    if (!form.email || !form.password) {
+      Alert.alert("Error", "Please fill in both email and password fields.");
+      return;
     }
-
+  
+    // Basic email format validation (client-side)
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(form.email)) {
+      Alert.alert("Error", "Please enter a valid email address.");
+      return;
+    }
+  
+    if (!isLoaded) {
+      return;
+    }
+  
     try {
       const signInAttempt = await signIn.create({
         identifier: form.email,
         password: form.password,
-      })
-
-      if (signInAttempt.status === 'complete') {
-        await setActive({ session: signInAttempt.createdSessionId })
-        router.replace('/')
+      });
+  
+      if (signInAttempt.status === "complete") {
+        await setActive({ session: signInAttempt.createdSessionId });
+        router.replace("/");
       } else {
-        // See https://clerk.com/docs/custom-flows/error-handling
-        // for more info on error handling
-        console.error(JSON.stringify(signInAttempt, null, 2))
+        console.error(JSON.stringify(signInAttempt, null, 2));
+        Alert.alert("Error", "An unexpected error occurred during sign-in. Please try again.");
       }
     } catch (err: any) {
-      console.error(JSON.stringify(err, null, 2))
+      // Handle and display specific errors from Clerk
+      if (err.errors) {
+        const errorMessages = err.errors.map((error: any) => error.longMessage).join("\n");
+        Alert.alert("Error", errorMessages);
+      } else {
+        console.error(JSON.stringify(err, null, 2));
+        Alert.alert("Error", "An unknown error occurred. Please try again later.");
+      }
     }
-  }, [isLoaded, form.email, form.password])
+  }, [isLoaded, form.email, form.password]);
 
   return (
     <ScrollView className="flex-1 bg-white">
@@ -81,8 +100,6 @@ const SignIn = () => {
             <Text className="text-primary-500">Sign Up</Text>
           </Link>
         </View>
-
-        {/* TODO: verifaction modal */}
       </View>
     </ScrollView>
   );

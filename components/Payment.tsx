@@ -1,9 +1,10 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import CustomButton from "./CustomButton";
 import { useStripe } from "@stripe/stripe-react-native";
 import { Alert, Image, Text, View } from "react-native";
 import { fetchAPI } from "@/lib/fetch";
 import { PaymentProps } from "@/types/type";
+
 import { useLocationStore } from "@/store";
 import { useAuth } from "@clerk/clerk-expo";
 import ReactNativeModal from "react-native-modal";
@@ -19,7 +20,8 @@ const Payment = ({
 }: PaymentProps) => {
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
   const { userId } = useAuth();
-  const [success, setSuccess] = useState(false);
+  const [success, setSuccess] = useState<boolean>(false);
+
   const {
     userAddress,
     userLongitude,
@@ -37,7 +39,11 @@ const Payment = ({
           amount: parseInt(amount) * 100,
           currencyCode: "zar",
         },
-        confirmHandler: async (paymentMethod, _, intentCreationCallback) => {
+        confirmHandler: async (
+          paymentMethod,
+          shouldSavePaymentMethod,
+          intentCreationCallback,
+        ) => {
           try {
             // Make a request to your own server.
             const { paymentIntent, customer } = await fetchAPI(
@@ -66,6 +72,7 @@ const Payment = ({
                   payment_method_id: paymentMethod.id,
                   payment_intent_id: paymentIntent.id,
                   customer_id: customer,
+                  client_secret: paymentIntent.client_secret,
                 }),
               });
 
@@ -105,6 +112,7 @@ const Payment = ({
       },
       returnURL: "myapp://book-ride",
     });
+    
     if (error) {
       // handle error
       console.error("Payment Sheet Initialization Error:", error.message);

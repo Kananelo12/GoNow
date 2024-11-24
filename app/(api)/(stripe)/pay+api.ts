@@ -5,14 +5,17 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { payment_method_id, payment_intent_id, customer_id } = body;
+    const { payment_method_id, payment_intent_id, customer_id, client_secret } =
+      body;
 
     if (!payment_method_id || !payment_intent_id || !customer_id) {
       return new Response(
         JSON.stringify({
           error: "Missing required payment information",
+        }),
+        {
           status: 400,
-        })
+        }
       );
     }
 
@@ -32,16 +35,16 @@ export async function POST(request: Request) {
         success: true,
         message: "Payment confirmed Successfully",
         result: result,
-      }),
+      })
     );
   } catch (error) {
-    console.log(error);
+    console.error("Error while paying: ", error);
 
     return new Response(
       JSON.stringify({
         error: error,
-        status: 500,
       }),
+      { status: 500 }
     );
   }
 }
